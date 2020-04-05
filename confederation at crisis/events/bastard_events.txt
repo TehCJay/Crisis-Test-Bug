@@ -1,0 +1,1302 @@
+namespace = bastard
+
+# Needs to be completely rewritten
+
+# Child born out of wedlock to a known father
+character_event = {
+	id = bastard.100
+	hide_window = yes
+	is_triggered_only = yes
+	
+	trigger = {
+		was_conceived_a_bastard = yes
+		is_father_real_father = yes
+	}
+	
+	immediate = {
+		# It's up to the liege to judge these situations
+		if = {
+			limit = { liege = { any_child = { character = ROOT } } }
+			liege = { character_event = { id = bastard.110 } }
+		}
+		if = {
+			limit = { liege = { NOT = { any_child = { character = ROOT } } } }
+			liege = { character_event = { id = bastard.150 } }
+		}
+	}
+}
+
+# Child born out of wedlock to an unknown father, but it's SUPER OBVIOUS
+character_event = {
+	id = bastard.101
+	hide_window = yes
+	is_triggered_only = yes
+	
+	trigger = {
+		was_conceived_a_bastard = yes
+		is_father_real_father = no
+		NOT = { mother = { graphical_culture = ROOT } }
+		NOT = { father = { graphical_culture = ROOT } }
+		real_father = { graphical_culture = ROOT }
+	}
+	
+	immediate = {
+		mother = { character_event = { id = bastard.102 } }
+		real_father = { character_event = { id = bastard.103 } }
+		father = { character_event = { id = bastard.104 } }
+	}
+}
+character_event = {
+	id = bastard.102
+	desc = "EVTDESCBASTARD102"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = { name = "EVTOPTABASTARD102" } # Uh-oh.
+}
+character_event = {
+	id = bastard.103
+	desc = "EVTDESCBASTARD103"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = { name = "EVTOPTABASTARD102" } # Uh-oh.
+}
+character_event = {
+	id = bastard.104
+	desc = "EVTDESCBASTARD104"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTCONFIRM"
+		FROM = {
+			real_father = {
+				FROM = { set_father = PREV }
+				reverse_opinion = { who = ROOT modifier = cuckolded }
+			}
+			hidden_tooltip = { character_event = { id = bastard.100 } }
+		}
+	}
+}
+
+# Your newborn child has been determined to be a bastard
+character_event = {
+	id = bastard.110
+	desc = "EVTDESCBASTARD110"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = {
+		# Legitimize them
+		name = "EVTOPTABASTARD110"
+		FROM = {
+			dynasty = ROOT
+			add_trait = legitimized_bastard
+		}
+		if = {
+			limit = { FROM = { mother = { character = ROOT } } }
+			FROM = {
+				father = {
+					opinion = { who = ROOT modifier = legitimized_child }
+					hidden_tooltip = { character_event = { id = bastard.111 } }
+					any_spouse = {
+						limit = { NOT = { character = ROOT } }
+						character_event = { id = bastard.112 tooltip = "EVTBASTARD112" }
+					}
+				}
+			}
+		}
+		if = {
+			limit = { FROM = { father = { character = ROOT } } }
+			FROM = {
+				mother = {
+					opinion = { who = ROOT modifier = legitimized_child }
+					hidden_tooltip = { character_event = { id = bastard.111 } }
+					any_spouse = {
+						limit = { NOT = { character = ROOT } }
+						character_event = { id = bastard.112 tooltip = "EVTBASTARD112" }
+					}
+				}
+			}
+		}
+		any_spouse = {
+			limit = { NOT = { any_child = { character = FROM } } }
+			character_event = { id = bastard.113 tooltip = "EVTTOOLTIPBASTARD113" }
+		}
+		if = {
+			limit = {
+				OR = {
+					religion = terran_imperial
+					religion = neo_feudal
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+			piety = -100
+			prestige = -100
+		}
+		ai_chance = {
+			factor = 75
+			# Special case - the parents have since gotten married
+			modifier = {
+				factor = 10
+				FROM = { father = { any_spouse = { FROM = { mother = { character = PREVPREV } } } } }
+			}
+			# Personality
+			modifier = {
+				factor = 2
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				trait = cold
+			}
+			modifier = {
+				factor = 2
+				trait = open_minded
+			}
+			modifier = {
+				factor = 0.5
+				trait = close_minded
+			}
+			
+			# Ideological concerns
+			modifier = {
+				factor = 5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = terran_imperial
+					religion = neo_feudal
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = terran_imperial
+					religion = neo_feudal
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+				trait = radical
+			}
+			
+			# Opinion of parents
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 100 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 90 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 80 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 70 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 60 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 50 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 40 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 30 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 20 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 10 } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -9 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -19 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -29 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -39 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -49 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -59 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -69 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -79 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -89 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -99 } } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 100 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 90 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 80 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 70 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 60 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 50 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 40 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 30 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 20 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 10 } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -9 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -19 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -29 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -39 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -49 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -59 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -69 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -79 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -89 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -99 } } } }
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD110" # Denounce them
+		FROM = { add_trait = bastard }
+		if = {
+			limit = { FROM = { mother = { character = ROOT } } }
+			FROM = {
+				dynasty = mother_bastard
+				father = {
+					opinion = { who = ROOT modifier = denounced_child }
+					hidden_tooltip = { character_event = { id = bastard.114 } }
+					any_spouse = {
+						limit = { NOT = { character = ROOT } }
+						character_event = { id = bastard.115 tooltip = "EVTBASTARD115" }
+					}
+				}
+			}
+		}
+		if = {
+			limit = { FROM = { father = { character = ROOT } } }
+			FROM = {
+				dynasty = father_bastard
+				mother = {
+					opinion = { who = ROOT modifier = legitimized_child }
+					hidden_tooltip = { character_event = { id = bastard.114 } }
+					any_spouse = {
+						limit = { NOT = { character = ROOT } }
+						character_event = { id = bastard.115 tooltip = "EVTBASTARD115" }
+					}
+				}
+			}
+		}
+		any_spouse = {
+			limit = { NOT = { any_child = { character = FROM } } }
+			character_event = { id = bastard.116 tooltip = "EVTTOOLTIPBASTARD116" }
+		}
+		if = {
+			limit = { religion = astrist }
+			piety = -100
+			prestige = -100
+		}
+		ai_chance = { factor = 25 }
+	}
+}
+
+character_event = {
+	id = bastard.111
+	desc = "EVTDESCBASTARD111"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = { name = "EVTOPTCONFIRM" }
+}
+
+# Your unfaithful spouse's bastard was legitimized
+character_event = {
+	id = bastard.112
+	desc = "EVTDESCBASTARD112"
+	picture = GFX_evt_scandal
+	show_from_from = yes
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTABASTARD155"
+		if = {
+			limit = { religion = astrist }
+			piety = -50
+		}
+		opinion= { who = FROM modifier = legitimized_bastard years = 10 }
+		FROMFROM = {
+			if = {
+				limit = { mother = { character = FROM } }
+				father = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+			}
+			if = {
+				limit = { father = { character = FROM } }
+				mother = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+			}
+		}
+		opinion = { who = FROM modifier = cuckolded }
+		ai_chance = {
+			factor = 50
+			modifier = {
+				factor = 4
+				trait = cold
+			}
+			modifier = {
+				factor = 0.25
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = neo_feudal
+					religion = terran_imperial
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD155"
+		if = {
+			limit = { NOT = { religion = astrist } }
+			prestige = -50
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+
+# Your unfaithful spouse legitimized their own bastard!
+character_event = {
+	id = bastard.113
+	desc = "EVTDESCBASTARD113"
+	picture = GFX_evt_scandal
+	show_from_from = yes
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTABASTARD155"
+		if = {
+			limit = { religion = astrist }
+			piety = -50
+		}
+		opinion= { who = FROM modifier = legitimized_bastard years = 10 }
+		FROMFROM = {
+			if = {
+				limit = { mother = { character = FROM } }
+				father = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+			if = {
+				limit = { father = { character = FROM } }
+				mother = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+		}
+		opinion = { who = FROM modifier = unfaithful }
+		ai_chance = {
+			factor = 50
+			modifier = {
+				factor = 4
+				trait = cold
+			}
+			modifier = {
+				factor = 0.25
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = neo_feudal
+					religion = terran_imperial
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD155"
+		if = {
+			limit = { NOT = { religion = astrist } }
+			prestige = -50
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+character_event = {
+	id = bastard.114
+	desc = "EVTDESCBASTARD114"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = { name = "EVTOPTCONFIRM" }
+}
+
+# Your unfaithful spouse's bastard was denounced
+character_event = {
+	id = bastard.115
+	desc = "EVTDESCBASTARD115"
+	picture = GFX_evt_scandal
+	show_from_from = yes
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTABASTARD155"
+		if = {
+			limit = { religion = astrist }
+			piety = -50
+		}
+		opinion= { who = FROM modifier = denounced_bastard years = 10 }
+		FROMFROM = {
+			if = {
+				limit = { mother = { character = FROM } }
+				father = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+			}
+			if = {
+				limit = { father = { character = FROM } }
+				mother = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+			}
+		}
+		opinion = { who = FROM modifier = cuckolded }
+		ai_chance = {
+			factor = 50
+			modifier = {
+				factor = 4
+				trait = cold
+			}
+			modifier = {
+				factor = 0.25
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = neo_feudal
+					religion = terran_imperial
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD155"
+		if = {
+			limit = { NOT = { religion = astrist } }
+			prestige = -50
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Your unfaithful spouse denounced their own bastard
+character_event = {
+	id = bastard.116
+	desc = "EVTDESCBASTARD116"
+	picture = GFX_evt_scandal
+	show_from_from = yes
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTABASTARD155"
+		if = {
+			limit = { religion = astrist }
+			piety = -50
+		}
+		opinion= { who = FROM modifier = denounced_bastard years = 10 }
+		FROMFROM = {
+			if = {
+				limit = { mother = { character = FROM } }
+				father = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+			if = {
+				limit = { father = { character = FROM } }
+				mother = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+		}
+		opinion = { who = FROM modifier = unfaithful }
+		ai_chance = {
+			factor = 50
+			modifier = {
+				factor = 4
+				trait = cold
+			}
+			modifier = {
+				factor = 0.25
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = neo_feudal
+					religion = terran_imperial
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD155"
+		if = {
+			limit = { NOT = { religion = astrist } }
+			prestige = -50
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# A newborn child in your court has been determined to be a bastard
+character_event = {
+	id = bastard.150
+	desc = "EVTDESCBASTARD150"
+	picture = GFX_evt_scandal
+	is_triggered_only = yes
+	
+	option = {
+		# Legitimize them
+		name = "EVTOPTABASTARD110"
+		FROM = { add_trait = legitimized_bastard }
+		if = {
+			limit = {
+				FROM = {
+					OR = {
+						mother = { is_married = no }
+						mother = { is_married_matrilineally = yes }
+						father = { is_alive = no }
+					}
+					NOT = {
+						AND = {
+							mother = { dynasty = 0 }
+							father = { is_alive = yes }
+						}
+					}
+				}
+			}
+			FROM = {
+				mother = {
+					character_event = { id = bastard.151 tooltip = "EVTTOOLTIPBASTARD151" }
+					opinion = { who = ROOT modifier = legitimized_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.153 tooltip = "EVTTOOLTIPBASTARD153" }
+					}
+				}
+				father = {
+					character_event = { id = bastard.152 tooltip = "EVTTOOLTIPBASTARD152" }
+					opinion = { who = ROOT modifier = legitimized_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.153 tooltip = "EVTTOOLTIPBASTARD153" }
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				FROM = {
+					OR = {
+						mother = { dynasty = 0 }
+						mother = {
+							is_married = yes
+							is_married_matrilineally = no
+						}
+					}
+					father = { is_alive = yes }
+				}
+			}
+			FROM = {
+				father = {
+					character_event = { id = bastard.151 tooltip = "EVTTOOLTIPBASTARD151" }
+					opinion = { who = ROOT modifier = legitimized_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.153 tooltip = "EVTTOOLTIPBASTARD153" }
+					}
+				}
+				mother = {
+					character_event = { id = bastard.152 tooltip = "EVTTOOLTIPBASTARD152" }
+					opinion = { who = ROOT modifier = legitimized_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.153 tooltip = "EVTTOOLTIPBASTARD153" }
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					religion = terran_imperial
+					religion = neo_feudal
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+			piety = -100
+			prestige = -100
+		}
+		ai_chance = {
+			factor = 50
+			# Special case - the parents have since gotten married
+			modifier = {
+				factor = 10
+				FROM = { father = { any_spouse = { FROM = { mother = { character = PREVPREV } } } } }
+			}
+			# Personality
+			modifier = {
+				factor = 4
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.25
+				trait = cold
+			}
+			modifier = {
+				factor = 2
+				trait = open_minded
+			}
+			modifier = {
+				factor = 0.5
+				trait = close_minded
+			}
+			
+			# Personally insulted
+			modifier = {
+				factor = 0.25
+				NOT = { trait = friendly }
+				FROM = {
+					OR = {
+						father = { any_spouse = { character = ROOT } }
+						mother = { any_spouse = { character = ROOT } }
+					}
+				}
+			}
+			modifier = {
+				factor = 0.5
+				trait = cold
+				FROM = {
+					OR = {
+						father = { any_spouse = { character = ROOT } }
+						mother = { any_spouse = { character = ROOT } }
+					}
+				}
+			}
+			
+			# Ideological concerns
+			modifier = {
+				factor = 5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = terran_imperial
+					religion = neo_feudal
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = terran_imperial
+					religion = neo_feudal
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+				trait = radical
+			}
+			
+			# Opinion of parents
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 100 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 90 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 80 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 70 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 60 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 50 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 40 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 30 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 20 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { father = { reverse_opinion = { who = ROOT value = 10 } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -9 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -19 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -29 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -39 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -49 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -59 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -69 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -79 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -89 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { father = { NOT = { reverse_opinion = { who = ROOT value = -99 } } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 100 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 90 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 80 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 70 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 60 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 50 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 40 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 30 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 20 } } }
+			}
+			modifier = {
+				factor = 1.25
+				FROM = { mother = { reverse_opinion = { who = ROOT value = 10 } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -9 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -19 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -29 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -39 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -49 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -59 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -69 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -79 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -89 } } } }
+			}
+			modifier = {
+				factor = 0.8
+				FROM = { mother = { NOT = { reverse_opinion = { who = ROOT value = -99 } } } }
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD110" # Denounce them
+		FROM = { add_trait = bastard }
+		if = {
+			limit = {
+				FROM = {
+					OR = {
+						mother = { is_married = no }
+						mother = { is_married_matrilineally = yes }
+						father = { is_alive = no }
+					}
+					NOT = {
+						AND = {
+							mother = { dynasty = 0 }
+							father = { is_alive = yes }
+						}
+					}
+				}
+			}
+			FROM = {
+				dynasty = mother_bastard
+				mother = {
+					hidden_tooltip = { character_event = { id = bastard.154 } }
+					opinion = { who = ROOT modifier = denounced_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.155 tooltip = "EVTTOOLTIPBASTARD155" }
+					}
+				}
+				father = {
+					hidden_tooltip = { character_event = { id = bastard.154 } }
+					opinion = { who = ROOT modifier = denounced_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.155 tooltip = "EVTTOOLTIPBASTARD155" }
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				FROM = {
+					OR = {
+						mother = { dynasty = 0 }
+						mother = {
+							is_married = yes
+							is_married_matrilineally = no
+						}
+					}
+					father = { is_alive = yes }
+				}
+			}
+			FROM = {
+				dynasty = father_bastard
+				mother = {
+					hidden_tooltip = { character_event = { id = bastard.154 } }
+					opinion = { who = ROOT modifier = denounced_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.155 tooltip = "EVTTOOLTIPBASTARD155" }
+					}
+				}
+				father = {
+					hidden_tooltip = { character_event = { id = bastard.154 } }
+					opinion = { who = ROOT modifier = denounced_child years = 10 }
+					any_spouse = {
+						limit = {
+							NOT = { any_child = { character = FROM } }
+							NOT = { character = ROOT }
+						}
+						character_event = { id = bastard.155 tooltip = "EVTTOOLTIPBASTARD155" }
+					}
+				}
+			}
+		}
+		if = {
+			limit = { FROM = { mother = { any_spouse = { character = ROOT } } } }
+			FROM = { mother = { reverse_opinion = { who = ROOT modifier = unfaithful } } }
+			FROM = { father = { reverse_opinion = { who = ROOT modifier = cuckolded } } }
+		}
+		if = {
+			limit = { FROM = { father = { any_spouse = { character = ROOT } } } }
+			FROM = { father = { reverse_opinion = { who = ROOT modifier = unfaithful } } }
+			FROM = { mother = { reverse_opinion = { who = ROOT modifier = cuckolded } } }
+		}
+		if = {
+			limit = { religion = astrist }
+			piety = -100
+			prestige = -100
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+
+# Your liege legitimizes your newborn bastard child
+character_event = {
+	id = bastard.151
+	desc = "EVTDESCBASTARD151"
+	picture = GFX_evt_birth
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTCONFIRM"
+		FROM = { FROM = { dynasty = ROOT } }
+	}
+}
+character_event = {
+	id = bastard.152
+	desc = "EVTDESCBASTARD152"
+	picture = GFX_evt_birth
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTCONFIRM"
+	}
+}
+# Your unfaithful spouse's bastard was legitimized!
+character_event = {
+	id = bastard.153
+	desc = "EVTDESCBASTARD153"
+	picture = GFX_evt_scandal
+	show_from_from = yes
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTABASTARD155"
+		if = {
+			limit = { religion = astrist }
+			piety = -50
+		}
+		opinion= { who = FROM modifier = legitimized_bastard years = 10 }
+		FROMFROM = {
+			if = {
+				limit = { father = { any_spouse = { character = ROOT } } }
+				father = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+				mother = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+			if = {
+				limit = { mother = { any_spouse = { character = ROOT } } }
+				mother = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+				father = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+		}
+		ai_chance = {
+			factor = 50
+			modifier = {
+				factor = 4
+				trait = cold
+			}
+			modifier = {
+				factor = 0.25
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = neo_feudal
+					religion = terran_imperial
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD155"
+		if = {
+			limit = { NOT = { religion = astrist } }
+			prestige = -50
+		}
+		ai_chance = { factor = 50 }
+	}
+}
+character_event = {
+	id = bastard.154
+	desc = "EVTDESCBASTARD154"
+	picture = GFX_evt_birth
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTCONFIRM"
+	}
+}
+# Your unfaithful spouse's bastard was denounced!
+character_event = {
+	id = bastard.155
+	desc = "EVTDESCBASTARD155"
+	picture = GFX_evt_scandal
+	show_from_from = yes
+	is_triggered_only = yes
+	
+	option = {
+		name = "EVTOPTABASTARD155"
+		if = {
+			limit = { religion = astrist }
+			piety = -50
+		}
+		opinion= { who = FROM modifier = denounced_bastard years = 10 }
+		FROMFROM = {
+			if = {
+				limit = { father = { any_spouse = { character = ROOT } } }
+				father = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+				mother = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+			if = {
+				limit = { mother = { any_spouse = { character = ROOT } } }
+				mother = { reverse_opinion = { who = ROOT modifier = unfaithful } }
+				father = { reverse_opinion = { who = ROOT modifier = cuckolded } }
+			}
+		}
+		ai_chance = {
+			factor = 50
+			modifier = {
+				factor = 4
+				trait = cold
+			}
+			modifier = {
+				factor = 0.25
+				trait = friendly
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				NOT = { trait = pragmatic }
+			}
+			modifier = {
+				factor = 0.5
+				religion = astrist
+				trait = radical
+			}
+			modifier = {
+				factor = 0.2
+				OR = {
+					religion = neo_feudal
+					religion = terran_imperial
+					religion = bio_directionist
+					religion_group = religious_group
+				}
+			}
+		}
+	}
+	option = {
+		name = "EVTOPTBBASTARD155"
+		if = {
+			limit = { NOT = { religion = astrist } }
+			prestige = -50
+		}
+		ai_chance = { factor = 50 }
+	}
+}
